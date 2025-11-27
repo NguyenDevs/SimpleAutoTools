@@ -1,4 +1,4 @@
-package org.nguyendevs.simpleautotools.config;
+package org.nguyendevs.simpleautotools.managers;
 
 import org.bukkit.Material;
 import org.bukkit.configuration.file.FileConfiguration;

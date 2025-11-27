@@ -1,4 +1,4 @@
-package org.nguyendevs.simpleautotools.config;
+package org.nguyendevs.simpleautotools.managers;
 
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;

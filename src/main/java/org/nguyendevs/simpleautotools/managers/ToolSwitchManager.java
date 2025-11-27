@@ -62,36 +62,39 @@ public class ToolSwitchManager {
         }
     }
 
+    // ============================================================
+    // Find Best TOOL for Block (Now uses Tag-based canHarvest)
+    // ============================================================
     private ItemStack findBestTool(Player player, ToolType toolType, Material blockType) {
         PlayerInventory inventory = player.getInventory();
         List<ItemStack> availableTools = new ArrayList<>();
 
-        if (plugin.getConfigManager().searchInHotbar()) {
+        boolean searchHotbar = plugin.getConfigManager().searchInHotbar();
+        boolean searchInv = plugin.getConfigManager().searchInInventory();
+        boolean checkHarvest = plugin.getConfigManager().isCheckHarvestLevelEnabled();
+
+        // -------- HOTBAR --------
+        if (searchHotbar) {
             for (int i = 0; i < 9; i++) {
                 ItemStack item = inventory.getItem(i);
-                if (item != null && ToolUtils.isToolType(item.getType(), toolType)) {
-                    // Check if tool can harvest this block
-                    if (plugin.getConfigManager().isCheckHarvestLevelEnabled()) {
-                        if (ToolUtils.canHarvest(item.getType(), blockType)) {
-                            availableTools.add(item);
-                        }
-                    } else {
+                if (item == null) continue;
+
+                if (ToolUtils.isToolType(item.getType(), toolType)) {
+                    if (!checkHarvest || ToolUtils.canHarvest(item.getType(), blockType)) {
                         availableTools.add(item);
                     }
                 }
             }
         }
 
-        if (plugin.getConfigManager().searchInInventory()) {
+        // -------- MAIN INVENTORY --------
+        if (searchInv) {
             for (int i = 9; i < 36; i++) {
                 ItemStack item = inventory.getItem(i);
-                if (item != null && ToolUtils.isToolType(item.getType(), toolType)) {
-                    // Check if tool can harvest this block
-                    if (plugin.getConfigManager().isCheckHarvestLevelEnabled()) {
-                        if (ToolUtils.canHarvest(item.getType(), blockType)) {
-                            availableTools.add(item);
-                        }
-                    } else {
+                if (item == null) continue;
+
+                if (ToolUtils.isToolType(item.getType(), toolType)) {
+                    if (!checkHarvest || ToolUtils.canHarvest(item.getType(), blockType)) {
                         availableTools.add(item);
                     }
                 }
@@ -103,47 +106,59 @@ public class ToolSwitchManager {
         }
 
         availableTools.sort(new ToolComparator(toolType));
-
         return availableTools.get(0);
     }
 
+    // ============================================================
+    // Find Best WEAPON
+    // ============================================================
     private ItemStack findBestWeapon(Player player) {
         PlayerInventory inventory = player.getInventory();
-        List<ItemStack> availableWeapons = new ArrayList<>();
+        List<ItemStack> weapons = new ArrayList<>();
 
-        if (plugin.getConfigManager().searchInHotbar()) {
+        boolean searchHotbar = plugin.getConfigManager().searchInHotbar();
+        boolean searchInv = plugin.getConfigManager().searchInInventory();
+
+        // --- HOTBAR ---
+        if (searchHotbar) {
             for (int i = 0; i < 9; i++) {
                 ItemStack item = inventory.getItem(i);
                 if (item != null && ToolUtils.isWeapon(item.getType())) {
-                    availableWeapons.add(item);
+                    weapons.add(item);
                 }
             }
         }
 
-        if (plugin.getConfigManager().searchInInventory()) {
+        // --- INVENTORY ---
+        if (searchInv) {
             for (int i = 9; i < 36; i++) {
                 ItemStack item = inventory.getItem(i);
                 if (item != null && ToolUtils.isWeapon(item.getType())) {
-                    availableWeapons.add(item);
+                    weapons.add(item);
                 }
             }
         }
 
-        if (availableWeapons.isEmpty()) {
+        if (weapons.isEmpty()) {
             return null;
         }
 
-        ToolType weaponType = availableWeapons.get(0).getType().name().endsWith("_SWORD") ? ToolType.SWORD : ToolType.AXE;
-        availableWeapons.sort(new ToolComparator(weaponType));
+        ToolType weaponType =
+                weapons.get(0).getType().name().endsWith("_SWORD")
+                        ? ToolType.SWORD
+                        : ToolType.AXE;
 
-        return availableWeapons.get(0);
+        weapons.sort(new ToolComparator(weaponType));
+        return weapons.get(0);
     }
 
+    // ============================================================
+    // Switch Tool
+    // ============================================================
     private void switchToTool(Player player, ItemStack tool) {
         PlayerInventory inventory = player.getInventory();
         ItemStack currentItem = inventory.getItemInMainHand();
 
-        // Don't switch if already holding the correct tool
         if (currentItem != null && currentItem.equals(tool)) {
             return;
         }
@@ -157,20 +172,19 @@ public class ToolSwitchManager {
             }
         }
 
-        if (toolSlot == -1) {
-            return;
-        }
+        if (toolSlot == -1) return;
 
         if (toolSlot < 9) {
-            // Tool is in hotbar, just switch to it
             player.getInventory().setHeldItemSlot(toolSlot);
         } else {
-            // Tool is in main inventory, swap with current item
             inventory.setItem(toolSlot, currentItem);
             inventory.setItemInMainHand(tool);
         }
     }
 
+    // ============================================================
+    // Tool Comparator
+    // ============================================================
     private class ToolComparator implements Comparator<ItemStack> {
         private final ToolType toolType;
 
@@ -179,85 +193,72 @@ public class ToolSwitchManager {
         }
 
         @Override
-        public int compare(ItemStack tool1, ItemStack tool2) {
-            List<PriorityType> priorityOrder = plugin.getConfigManager().getPriorityOrder();
+        public int compare(ItemStack t1, ItemStack t2) {
+            List<PriorityType> order = plugin.getConfigManager().getPriorityOrder();
 
-            for (PriorityType priorityType : priorityOrder) {
+            for (PriorityType type : order) {
                 int result = 0;
 
-                switch (priorityType) {
+                switch (type) {
                     case ENCHANTMENT:
-                        result = compareEnchantments(tool1, tool2);
+                        result = compareEnchantments(t1, t2);
                         break;
+
                     case MATERIAL:
-                        result = compareMaterial(tool1, tool2);
+                        result = compareMaterial(t1, t2);
                         break;
+
                     case DURABILITY:
-                        result = compareDurability(tool1, tool2);
+                        result = compareDurability(t1, t2);
                         break;
                 }
 
-                // If this priority level found a difference, return it
                 if (result != 0) {
                     return result;
                 }
             }
-
             return 0;
         }
 
-        private int compareEnchantments(ItemStack tool1, ItemStack tool2) {
-            List<Enchantment> enchantPriority = plugin.getPriorityManager().getEnchantmentPriority(toolType);
+        private int compareEnchantments(ItemStack t1, ItemStack t2) {
+            List<Enchantment> enchList = plugin.getPriorityManager().getEnchantmentPriority(toolType);
 
-            for (Enchantment enchant : enchantPriority) {
-                int level1 = tool1.getEnchantmentLevel(enchant);
-                int level2 = tool2.getEnchantmentLevel(enchant);
+            for (Enchantment ench : enchList) {
+                int lvl1 = t1.getEnchantmentLevel(ench);
+                int lvl2 = t2.getEnchantmentLevel(ench);
 
-                // If one has the enchantment and the other doesn't
-                if ((level1 > 0 && level2 == 0) || (level1 == 0 && level2 > 0)) {
-                    return Integer.compare(level2, level1);
-                }
-
-                // If both have the enchantment, compare levels
-                if (level1 > 0 && level2 > 0 && level1 != level2) {
-                    return Integer.compare(level2, level1);
+                if (lvl1 != lvl2) {
+                    return Integer.compare(lvl2, lvl1);
                 }
             }
-
             return 0;
         }
 
-        private int compareMaterial(ItemStack tool1, ItemStack tool2) {
-            if (!plugin.getConfigManager().isMaterialPriorityEnabled()) {
-                return 0;
-            }
+        private int compareMaterial(ItemStack t1, ItemStack t2) {
+            if (!plugin.getConfigManager().isMaterialPriorityEnabled()) return 0;
 
-            int tier1 = ToolUtils.getMaterialTier(tool1.getType());
-            int tier2 = ToolUtils.getMaterialTier(tool2.getType());
+            int tier1 = ToolUtils.getMaterialTier(t1.getType());
+            int tier2 = ToolUtils.getMaterialTier(t2.getType());
 
             if (tier1 != tier2) {
                 return Integer.compare(tier2, tier1);
             }
-
             return 0;
         }
 
-        private int compareDurability(ItemStack tool1, ItemStack tool2) {
-            String durabilityPriority = plugin.getConfigManager().getDurabilityPriority();
+        private int compareDurability(ItemStack t1, ItemStack t2) {
+            String dur = plugin.getConfigManager().getDurabilityPriority();
 
-            if (durabilityPriority.equalsIgnoreCase("NONE")) {
-                return 0;
+            if (dur.equalsIgnoreCase("NONE")) return 0;
+
+            int d1 = ToolUtils.getRemainingDurability(t1);
+            int d2 = ToolUtils.getRemainingDurability(t2);
+
+            if (dur.equalsIgnoreCase("HIGH")) {
+                return Integer.compare(d2, d1);
+            } else if (dur.equalsIgnoreCase("LOW")) {
+                return Integer.compare(d1, d2);
             }
-
-            int dur1 = ToolUtils.getRemainingDurability(tool1);
-            int dur2 = ToolUtils.getRemainingDurability(tool2);
-
-            if (durabilityPriority.equalsIgnoreCase("HIGH")) {
-                return Integer.compare(dur2, dur1);
-            } else if (durabilityPriority.equalsIgnoreCase("LOW")) {
-                return Integer.compare(dur1, dur2);
-            }
-
             return 0;
         }
     }
