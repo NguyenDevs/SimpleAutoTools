@@ -1,0 +1,52 @@
+# Enchantment Priority Configuration
+# Higher position = Higher priority
+# If two tools have the same enchantment, the one with higher level is prioritized
+# If Tool A has Efficiency and Tool B has Fortune, Tool A is selected (Efficiency is higher priority)
+
+# Note: Use Minecraft enchantment names or common aliases
+# Supported aliases: EFFICIENCY/DIG_SPEED, FORTUNE/LOOT_BONUS_BLOCKS,
+#                    SILK_TOUCH/SILKTOUCH, SHARPNESS/DAMAGE_ALL, etc.
+
+PICKAXE:
+  - SILK_TOUCH      # Highest priority - needed for glass, ice, etc.
+  - EFFICIENCY      # Fast mining
+  - FORTUNE         # More drops
+  - UNBREAKING      # Durability
+  - MENDING         # Repair
+
+AXE:
+  - SILK_TOUCH      # For specific blocks
+  - EFFICIENCY      # Fast chopping
+  - FORTUNE         # More drops from leaves
+  - SHARPNESS       # Combat ability
+  - UNBREAKING      # Durability
+  - MENDING         # Repair
+
+SHOVEL:
+  - SILK_TOUCH      # For grass blocks, etc.
+  - EFFICIENCY      # Fast digging
+  - FORTUNE         # More drops from gravel
+  - UNBREAKING      # Durability
+  - MENDING         # Repair
+
+HOE:
+  - SILK_TOUCH      # For specific blocks
+  - EFFICIENCY      # Fast harvesting
+  - FORTUNE         # More crops
+  - UNBREAKING      # Durability
+  - MENDING         # Repair
+
+SWORD:
+  - SHARPNESS       # Highest priority - more damage
+  - FIRE_ASPECT     # Burn enemies
+  - LOOTING         # More drops
+  - SWEEPING_EDGE   # Area damage
+  - KNOCKBACK       # Push enemies
+  - UNBREAKING      # Durability
+  - MENDING         # Repair
+
+SHEARS:
+  - SILK_TOUCH      # For cobwebs, etc.
+  - EFFICIENCY      # Faster shearing
+  - UNBREAKING      # Durability
+  - MENDING         # Repair

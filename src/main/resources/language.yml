@@ -1,0 +1,21 @@
+# SimpleAutoTools Language File
+# Version: 1.0
+# Use & for color codes
+
+# Plugin Prefix
+prefix: "&3[&bSAT&3]&r"
+
+# Command Messages
+command:
+  no-permission: "&cYou don't have permission to use this command!"
+  player-only: "&cThis command can only be used by players!"
+
+  # Reload Command
+  reload:
+    success: "&aPlugin configuration reloaded successfully!"
+    error: "&cAn error occurred while reloading the plugin!"
+
+  # Toggle Command
+  toggle:
+    enabled: "&aAuto tool switching has been &lENABLED&a!"
+    disabled: "&cAuto tool switching has been &lDISABLED&c!"

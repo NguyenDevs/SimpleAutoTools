@@ -1,0 +1,38 @@
+# SimpleAutoTools Configuration
+# Plugin by NguyenDevs
+
+# Enabled worlds - Plugin will only work in these worlds
+# Leave empty to enable in all worlds
+enabled-worlds:
+  - world
+  - world_nether
+  - world_the_end
+
+# Tool selection priority
+priority:
+  # Priority order - Tools will be compared in this order
+  # Available options: ENCHANTMENT, MATERIAL, DURABILITY
+  # First item has highest priority
+  order:
+    - ENCHANTMENT
+    - MATERIAL
+    - DURABILITY
+
+  # Material tier priority (NETHERITE > DIAMOND > IRON > STONE > WOOD)
+  material:
+    enabled: true
+    # Check if tool can harvest the block (e.g. gold pickaxe can't mine diamond ore)
+    check-harvest-level: true
+
+  # Durability priority (HIGH = use high durability first, LOW = use low durability first, NONE = ignore)
+  durability: HIGH
+
+# Search locations for tools
+search-locations:
+  hotbar: true      # Search in hotbar (slots 0-8)
+  inventory: true   # Search in main inventory (slots 9-35)
+
+# Features
+features:
+  auto-switch-blocks: true    # Auto-switch tools when mining blocks
+  auto-switch-entities: true  # Auto-switch weapons when attacking entities

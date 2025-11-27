@@ -1,0 +1,24 @@
+name: SimpleAutoTools
+version: 1.0.0
+main: org.nguyendevs.simpleautotools.SimpleAutoTools
+api-version: 1.19
+author: NguyenDevs
+description: Automatically switch to the best tool for mining and combat
+
+commands:
+  autotool:
+    description: Main command for SimpleAutoTools
+    usage: /simpleautotool <toggle|reload>
+    aliases: [sat, autotools]
+    permission: simpleautotools.use
+
+permissions:
+  simpleautotools.use:
+    description: Allows using the plugin
+    default: true
+  simpleautotools.toggle:
+    description: Allows toggling auto-tool for yourself
+    default: true
+  simpleautotools.reload:
+    description: Allows reloading the plugin configuration
+    default: op
