@@ -1,7 +1,6 @@
 package org.nguyendevs.simpleautotools.utils;
 
 import org.bukkit.Material;
-import org.bukkit.Tag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.Damageable;
 
@@ -33,16 +32,6 @@ public class ToolUtils {
         return name.endsWith("_SWORD") || name.endsWith("_AXE");
     }
 
-    /**
-     * Tiers:
-     * 6 = Netherite
-     * 5 = Diamond
-     * 4 = Iron
-     * 3 = Copper (nếu plugin thêm)
-     * 2 = Gold
-     * 1 = Stone
-     * 0 = Wood
-     */
     public static int getMaterialTier(Material material) {
         String name = material.name();
 
@@ -69,56 +58,57 @@ public class ToolUtils {
     }
 
     /**
-     * Check xem tool có thể harvest block không bằng tags.
+     * Check if a tool can harvest a specific block
+     * For example: wooden pickaxe can't mine diamond ore
      */
     public static boolean canHarvest(Material toolMaterial, Material blockMaterial) {
         int toolTier = getMaterialTier(toolMaterial);
+        int requiredTier = getRequiredHarvestTier(blockMaterial);
 
-        // Nếu tool không có tier => không thể harvest
-        if (toolTier < 0) return false;
-
-        // 1. Block yêu cầu Diamond hoặc Netherite
-        if (Tag.NEEDS_DIAMOND_TOOL.isTagged(blockMaterial)) {
-            return toolTier >= 5;
-        }
-
-        // 2. Block yêu cầu Iron trở lên
-        if (Tag.NEEDS_IRON_TOOL.isTagged(blockMaterial)) {
-            return toolTier >= 4;
-        }
-
-        // 3. Block yêu cầu Stone trở lên
-        if (Tag.NEEDS_STONE_TOOL.isTagged(blockMaterial)) {
-            return toolTier >= 1;
-        }
-
-        // 4. Nếu block thuộc nhóm mineable, tức là có thể harvest với tool đúng loại
-        if (isPickaxeMineable(blockMaterial) ||
-                isAxeMineable(blockMaterial) ||
-                isShovelMineable(blockMaterial) ||
-                isHoeMineable(blockMaterial)) {
-
-            // Không có yêu cầu tool tier => tool nào cũng harvest được
-            return true;
-        }
-
-        // 5. Nếu block không thuộc mineable tags => không harvest được
-        return false;
+        return toolTier >= requiredTier;
     }
 
-    private static boolean isPickaxeMineable(Material block) {
-        return Tag.MINEABLE_PICKAXE.isTagged(block);
-    }
+    /**
+     * Get the minimum tool tier required to harvest a block
+     * Returns -1 if no specific tier is required
+     */
+    private static int getRequiredHarvestTier(Material blockMaterial) {
+        String blockName = blockMaterial.name();
 
-    private static boolean isAxeMineable(Material block) {
-        return Tag.MINEABLE_AXE.isTagged(block);
-    }
+        // Netherite/Ancient Debris - requires diamond (tier 5)
+        if (blockName.equals("ANCIENT_DEBRIS") || blockName.equals("CRYING_OBSIDIAN")) {
+            return 5;
+        }
 
-    private static boolean isShovelMineable(Material block) {
-        return Tag.MINEABLE_SHOVEL.isTagged(block);
-    }
+        // Obsidian - requires diamond (tier 5)
+        if (blockName.contains("OBSIDIAN")) {
+            return 5;
+        }
 
-    private static boolean isHoeMineable(Material block) {
-        return Tag.MINEABLE_HOE.isTagged(block);
+        if (blockName.contains("DIAMOND") || blockName.contains("EMERALD") ||
+                blockName.contains("GOLD_ORE") || blockName.contains("REDSTONE")) {
+            return 4;
+        }
+
+        if (blockName.contains("LAPIS") || blockName.contains("IRON_ORE")) {
+            return 1;
+        }
+
+        if (blockName.contains("_ORE")) {
+            return 1;
+        }
+
+        if (blockName.contains("ANVIL") || blockName.equals("SPAWNER") ||
+                blockName.equals("BEACON") || blockName.equals("ENCHANTING_TABLE") ||
+                blockName.equals("ENDER_CHEST") || blockName.equals("REINFORCED_DEEPSLATE")) {
+            return 4;
+        }
+
+        if (blockName.contains("STONE") || blockName.contains("COBBLE") ||
+                blockName.contains("BRICK") || blockName.contains("CONCRETE")) {
+            return 0;
+        }
+
+        return -1;
     }
 }
