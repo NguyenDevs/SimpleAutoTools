@@ -88,6 +88,12 @@ public class ConfigManager {
         return config.getBoolean("features.auto-switch-entities", true);
     }
 
+    // Smart enchantment selection (NEW)
+    // This is used as a tiebreaker, not a replacement for user priority
+    public boolean isSmartEnchantmentEnabled() {
+        return config.getBoolean("smart-enchantment-selection", true);
+    }
+
     public FileConfiguration getConfig() {
         return config;
     }
