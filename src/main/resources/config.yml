@@ -1,5 +1,11 @@
-# SimpleAutoTools Configuration
+# SimpleAutoTools Configuration (Tag-Based Version)
 # Plugin by NguyenDevs
+#
+# WHAT'S NEW:
+# - No longer requires tool-blocks.yml!
+# - Uses Minecraft's built-in Tag API for block detection
+# - Automatically supports all current and future blocks
+# - More accurate and maintainable
 
 # Enabled worlds - Plugin will only work in these worlds
 # Leave empty to enable in all worlds
@@ -18,13 +24,17 @@ priority:
     - MATERIAL
     - DURABILITY
 
-  # Material tier priority (NETHERITE > DIAMOND > IRON > STONE > WOOD)
+  # Material tier priority (NETHERITE > DIAMOND > IRON > GOLDEN > STONE > WOOD)
   material:
     enabled: true
-    # Check if tool can harvest the block (e.g. gold pickaxe can't mine diamond ore)
+    # Check if tool can harvest the block (uses Minecraft's harvest level tags)
+    # Example: Wooden pickaxe can't mine diamond ore, golden pickaxe can't mine obsidian
     check-harvest-level: true
 
-  # Durability priority (HIGH = use high durability first, LOW = use low durability first, NONE = ignore)
+  # Durability priority
+  # HIGH = use high durability tools first (preserve low durability tools)
+  # LOW = use low durability tools first (save best tools for later)
+  # NONE = ignore durability when selecting tools
   durability: HIGH
 
 # Search locations for tools
@@ -36,3 +46,12 @@ search-locations:
 features:
   auto-switch-blocks: true    # Auto-switch tools when mining blocks
   auto-switch-entities: true  # Auto-switch weapons when attacking entities
+
+# Advanced: Smart enchantment selection (NEW!)
+# When enabled, this acts as a TIEBREAKER when tools have equal priority
+# Example: You have 2 pickaxes with same enchants and levels
+#   - Mining glass: Will prefer the one with Silk Touch
+#   - Mining diamond ore: Will prefer the one with Fortune
+# This does NOT override your priority.yml settings!
+# Disable if you want pure priority.yml control
+smart-enchantment-selection: true
